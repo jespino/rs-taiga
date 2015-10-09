@@ -1,0 +1,8 @@
+[package]
+name = "taiga"
+version = "0.1.0"
+authors = ["Jesús Espino <jespinog@gmail.com>"]
+
+[dependencies]
+hyper = "0.6.14"
+rustc-serialize = "0.3"
