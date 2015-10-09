@@ -14,7 +14,7 @@ fn main() {
 
     match taiga.projects() {
         Ok(response) => {
-            for project in response.as_array().unwrap() {
+            for project in response.data.as_array().unwrap() {
                 println!("{}", project.find("name").unwrap().as_string().unwrap());
             }
         },

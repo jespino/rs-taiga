@@ -3,19 +3,25 @@ extern crate rustc_serialize;
 
 use std::io::Read;
 
-use hyper::Client;
-use hyper::header::ContentType;
-use hyper::header::Authorization;
+use hyper::{Client, Url};
+use hyper::status::StatusCode;
+use hyper::method::Method;
+use hyper::header::{Headers, ContentType, Authorization};
 use rustc_serialize::json::Json;
 
 pub struct APIError {
     pub message: String
 }
 
+pub struct Response {
+    pub status: StatusCode,
+    pub headers: Headers,
+    pub data: Json,
+}
+
 pub struct Taiga {
     url: String,
-    token: String,
-    token_type: String,
+    token: Option<String>,
     client: Client,
 }
 
@@ -23,59 +29,62 @@ impl Taiga {
     pub fn new(url: String) -> Taiga {
         Taiga {
             url: url,
-            token: String::new(),
-            token_type: String::new(),
+            token: None,
             client: Client::new()
         }
     }
 
-    pub fn resolve(self: &mut Taiga, name: &str) -> String {
-        if name == "auth" {
-            return "".to_string() + &self.url + "/auth";
-        } else if name == "projects" {
-            return "".to_string() + &self.url + "/projects";
-        } else {
-            return "".to_string() + &self.url;
-        }
+	pub fn request(self: &mut Taiga, method: Method, url_string: String, body: String) -> Result<Response, APIError> {
+        let url = match Url::parse(&url_string) {
+            Ok(url) => url,
+            Err(err) => return Err(APIError {message: format!("{}", err)})
+        };
+
+        let mut req = self.client.request(method, url);
+
+		req = match self.token.clone() {
+			Some(token) => req.header(Authorization(token)),
+            None => req
+		};
+
+        req = req.header(ContentType::json());
+        req = req.body(body.as_bytes());
+
+        let mut resp = match req.send() {
+            Ok(resp) => resp,
+            Err(err) => return Err(APIError {message: format!("{}", err)})
+        };
+
+        let mut resp_body = String::new();
+        match resp.read_to_string(&mut resp_body) {
+            Ok(_) => (),
+            Err(err) => return Err(APIError {message: format!("{}", err)})
+        };
+
+        let rest_response = Response {
+            status: resp.status,
+            headers: resp.headers.clone(),
+            data: Json::from_str(&resp_body).unwrap(),
+        };
+
+        return Ok(rest_response);
     }
 
-    pub fn get(self: &mut Taiga, url: String) -> Result<Json, APIError> {
-        let auth_token = format!("{} {}", self.token_type, self.token);
-        match self.client.get(&url).header(ContentType::json()).header(Authorization(auth_token)).send() {
-            Ok(mut response) =>  {
-                let mut body = String::new();
-                response.read_to_string(&mut body).unwrap();
-                let data: Json = Json::from_str(&body).unwrap();
-                Ok(data)
-            },
-            Err(_) => Err(APIError {message: "TODO".to_string()})
-        }
-    }
-
-    pub fn post(self: &mut Taiga, url: String, data: Json) -> Result<Json, APIError> {
-        let encoded_data = format!("{}", data.pretty());
-        match self.client.post(&url).header(ContentType::json()).body(&encoded_data).send() {
-            Ok(mut response) =>  {
-                let mut body = String::new();
-                response.read_to_string(&mut body).unwrap();
-                let data: Json = Json::from_str(&body).unwrap();
-                Ok(data)
-            },
-            Err(_) => Err(APIError {message: "TODO".to_string()})
-        }
-    }
-
-    pub fn auth(self: &mut Taiga, username: String, password: String) -> Result<Json, APIError> {
+    pub fn auth(self: &mut Taiga, username: String, password: String) -> Result<Response, APIError> {
         let login_json = format!("{{\"username\": \"{}\", \"password\": \"{}\", \"type\": \"normal\"}}", username, password);
         let login_data = Json::from_str(&login_json).unwrap();
-        let url = self.resolve("auth");
-        match self.post(url, login_data) {
-            Ok(data) => {
-                match data.find("auth_token") {
+        let url = "".to_string() + &self.url + "/auth";
+        match self.request(Method::Post, url, format!("{}", login_data)) {
+            Ok(response) => {
+                match response.data.find("auth_token") {
                     Some(token) => {
-                        self.token = token.as_string().unwrap().to_string();
-                        self.token_type = "Bearer".to_string();
-                        Ok(data.clone())
+                        let token_type = "Bearer".to_string();
+                        self.token = Some(format!("{} {}", token_type, token.as_string().unwrap()));
+                        Ok(Response {
+                            status: response.status.clone(),
+                            headers: response.headers.clone(),
+                            data: response.data.clone()
+                        })
                     },
                     None => Err(APIError {message: "No auth_token in the reply".to_string()})
                 }
@@ -86,16 +95,21 @@ impl Taiga {
         }
     }
 
-    pub fn app_auth(self: &mut Taiga, app_token: String) -> Result<Json, APIError> {
+    pub fn app_auth(self: &mut Taiga, app_token: String) -> Result<Response, APIError> {
         let token_json = format!("{{\"token\": \"{}\"}}", app_token);
         let data = Json::from_str(&token_json).unwrap();
-        self.token = data.find("token").unwrap().as_string().unwrap().to_string();
-        self.token_type = "Application".to_string();
-        return Ok(data);
+        let token = data.find("token").unwrap().as_string().unwrap().to_string();
+        let token_type = "Application".to_string();
+		self.token = Some(format!("{} {}", token_type, token));
+        return Ok(Response {
+            status: StatusCode::Unregistered(0),
+            headers: Headers::new(),
+            data: data
+        });
     }
 
-    pub fn projects(self: &mut Taiga) -> Result<Json, APIError> {
-        let url = self.resolve("projects");
-        return self.get(url)
+    pub fn projects(self: &mut Taiga) -> Result<Response, APIError> {
+        let url = "".to_string() + &self.url + "/projects";
+        return self.request(Method::Get, url, "".to_string());
     }
 }
