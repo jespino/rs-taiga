@@ -15,7 +15,19 @@ fn main() {
     match taiga.projects() {
         Ok(response) => {
             for project in response.data.as_array().unwrap() {
-                println!("{}", project.find("name").unwrap().as_string().unwrap());
+                println!("{} - {}",
+                    project.find("id").unwrap().as_i64().unwrap(),
+                    project.find("name").unwrap().as_string().unwrap()
+                );
+            }
+        },
+        Err(e) => println!("{}", e.message)
+    }
+
+    match taiga.user_stories(1) {
+        Ok(response) => {
+            for user_story in response.data.as_array().unwrap() {
+                println!("{}", user_story.find("subject").unwrap().as_string().unwrap());
             }
         },
         Err(e) => println!("{}", e.message)

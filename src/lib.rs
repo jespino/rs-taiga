@@ -109,7 +109,12 @@ impl Taiga {
     }
 
     pub fn projects(self: &mut Taiga) -> Result<Response, APIError> {
-        let url = "".to_string() + &self.url + "/projects";
+        let url = format!("{}/projects", &self.url);
+        return self.request(Method::Get, url, "".to_string());
+    }
+
+    pub fn user_stories(self: &mut Taiga, project_id: i32) -> Result<Response, APIError> {
+        let url = format!("{}/userstories?project={}", &self.url, project_id);
         return self.request(Method::Get, url, "".to_string());
     }
 }
