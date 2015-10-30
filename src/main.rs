@@ -26,12 +26,13 @@ fn main() {
         Err(e) => println!("{}", e.message)
     }
 
-    // match taiga.projects().get(1).run() {
-    //     Ok(response) => {
-    //         for user_story in response.data.as_array().unwrap() {
-    //             println!("{}", user_story.find("subject").unwrap().as_string().unwrap());
-    //         }
-    //     },
-    //     Err(e) => println!("{}", e.message)
-    // }
+    match taiga_logged.projects().get(1).run() {
+        Ok(project) => {
+            println!("{} - {}",
+                project.id,
+                project.name,
+            );
+        },
+        Err(e) => println!("{}", e.message)
+    }
 }

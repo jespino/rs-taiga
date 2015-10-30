@@ -93,7 +93,7 @@ impl Taiga {
         return Ok(Taiga {url: self.url, token: Some(format!("Application {}", app_token))});
     }
 
-    pub fn projects(self: Taiga) -> ProjectsProxy {
+    pub fn projects(self: &Taiga) -> ProjectsProxy {
         return ProjectsProxy::new(self)
     }
     // pub fn user_stories(self: &mut Taiga) -> UserStoriesProxy {
@@ -101,12 +101,12 @@ impl Taiga {
     // }
 }
 
-pub struct ProjectsProxy {
-    taiga_client: Taiga,
+pub struct ProjectsProxy<'a> {
+    taiga_client: &'a Taiga,
 }
 
-pub struct ProjectProxy {
-    taiga_client: Taiga,
+pub struct ProjectProxy<'b> {
+    taiga_client: &'b Taiga,
     project_id: i64
 }
 
@@ -115,18 +115,18 @@ pub struct Project {
     pub name: String,
 }
 
-impl ProjectsProxy {
-    pub fn new(taiga_client: Taiga) -> ProjectsProxy {
+impl<'a> ProjectsProxy<'a> {
+    pub fn new(taiga_client: &'a Taiga) -> ProjectsProxy<'a> {
         ProjectsProxy {
             taiga_client: taiga_client
         }
     }
 
-    pub fn get(self: ProjectsProxy, id: i64) -> ProjectProxy {
+    pub fn get(self: ProjectsProxy<'a>, id: i64) -> ProjectProxy<'a> {
         ProjectProxy::new(self.taiga_client, id)
     }
 
-    pub fn run(self: ProjectsProxy) -> Result<Vec<Project>, APIError> {
+    pub fn run(self: ProjectsProxy<'a>) -> Result<Vec<Project>, APIError> {
         let url = format!("{}/projects", self.taiga_client.url);
         match self.taiga_client.request(Method::Get, url, "".to_string()) {
             Ok(response) => {
@@ -152,15 +152,15 @@ impl ProjectsProxy {
     }
 }
 
-impl ProjectProxy {
-    pub fn new(taiga_client: Taiga, id: i64) -> ProjectProxy{
+impl<'b> ProjectProxy<'b> {
+    pub fn new(taiga_client: &'b Taiga, id: i64) -> ProjectProxy<'b>{
         ProjectProxy {
             taiga_client: taiga_client,
             project_id: id
         }
     }
 
-    pub fn run(self: ProjectProxy) -> Result<Project, APIError> {
+    pub fn run(self: ProjectProxy<'b>) -> Result<Project, APIError> {
         let url = format!("{}/projects/{}", self.taiga_client.url, self.project_id);
         match self.taiga_client.request(Method::Get, url, "".to_string()) {
             Ok(response) => {
