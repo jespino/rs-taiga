@@ -8,7 +8,9 @@ use hyper::status::StatusCode;
 use hyper::method::Method;
 use hyper::header::{Headers, ContentType, Authorization};
 use rustc_serialize::json::Json;
+use rustc_serialize::json;
 
+#[derive(Debug)]
 pub struct APIError {
     pub message: String
 }
@@ -22,7 +24,6 @@ pub struct Response {
 pub struct Taiga {
     url: String,
     token: Option<String>,
-    client: Client,
 }
 
 impl Taiga {
@@ -30,17 +31,17 @@ impl Taiga {
         Taiga {
             url: url,
             token: None,
-            client: Client::new()
         }
     }
 
-	pub fn request(self: &mut Taiga, method: Method, url_string: String, body: String) -> Result<Response, APIError> {
+	pub fn request(self: &Taiga, method: Method, url_string: String, body: String) -> Result<Response, APIError> {
         let url = match Url::parse(&url_string) {
             Ok(url) => url,
             Err(err) => return Err(APIError {message: format!("{}", err)})
         };
 
-        let mut req = self.client.request(method, url);
+        let mut client = Client::new();
+        let mut req = client.request(method, url);
 
 		req = match self.token.clone() {
 			Some(token) => req.header(Authorization(token)),
@@ -70,7 +71,7 @@ impl Taiga {
         return Ok(rest_response);
     }
 
-    pub fn auth(self: &mut Taiga, username: String, password: String) -> Result<Response, APIError> {
+    pub fn auth(self: Taiga, username: String, password: String) -> Result<Taiga, APIError> {
         let login_json = format!("{{\"username\": \"{}\", \"password\": \"{}\", \"type\": \"normal\"}}", username, password);
         let login_data = Json::from_str(&login_json).unwrap();
         let url = "".to_string() + &self.url + "/auth";
@@ -78,13 +79,7 @@ impl Taiga {
             Ok(response) => {
                 match response.data.find("auth_token") {
                     Some(token) => {
-                        let token_type = "Bearer".to_string();
-                        self.token = Some(format!("{} {}", token_type, token.as_string().unwrap()));
-                        Ok(Response {
-                            status: response.status.clone(),
-                            headers: response.headers.clone(),
-                            data: response.data.clone()
-                        })
+                        Ok(Taiga {url: self.url, token: Some(format!("Bearer {}", token.as_string().unwrap()))})
                     },
                     None => Err(APIError {message: "No auth_token in the reply".to_string()})
                 }
@@ -95,26 +90,94 @@ impl Taiga {
         }
     }
 
-    pub fn app_auth(self: &mut Taiga, app_token: String) -> Result<Response, APIError> {
-        let token_json = format!("{{\"token\": \"{}\"}}", app_token);
-        let data = Json::from_str(&token_json).unwrap();
-        let token = data.find("token").unwrap().as_string().unwrap().to_string();
-        let token_type = "Application".to_string();
-		self.token = Some(format!("{} {}", token_type, token));
-        return Ok(Response {
-            status: StatusCode::Unregistered(0),
-            headers: Headers::new(),
-            data: data
-        });
+    pub fn app_auth(self: Taiga, app_token: String) -> Result<Taiga, APIError> {
+        return Ok(Taiga {url: self.url, token: Some(format!("Application {}", app_token))});
     }
 
-    pub fn projects(self: &mut Taiga) -> Result<Response, APIError> {
-        let url = format!("{}/projects", &self.url);
-        return self.request(Method::Get, url, "".to_string());
+    pub fn projects(self: Taiga) -> ProjectsProxy {
+        return ProjectsProxy::new(self)
+    }
+    // pub fn user_stories(self: &mut Taiga) -> UserStoriesProxy {
+    //     return UserStoriesProxy::new(self)
+    // }
+}
+
+pub struct ProjectsProxy {
+    taiga_client: Taiga,
+}
+
+pub struct ProjectProxy {
+    taiga_client: Taiga,
+    project_id: i64
+}
+
+pub struct Project {
+    pub id: i64,
+    pub name: String,
+}
+
+impl ProjectsProxy {
+    pub fn new(taiga_client: Taiga) -> ProjectsProxy {
+        ProjectsProxy {
+            taiga_client: taiga_client
+        }
     }
 
-    pub fn user_stories(self: &mut Taiga, project_id: i32) -> Result<Response, APIError> {
-        let url = format!("{}/userstories?project={}", &self.url, project_id);
-        return self.request(Method::Get, url, "".to_string());
+    pub fn get(self: ProjectsProxy, id: i64) -> ProjectProxy {
+        ProjectProxy::new(self.taiga_client, id)
+    }
+
+    pub fn run(self: ProjectsProxy) -> Result<Vec<Project>, APIError> {
+        let url = format!("{}/projects", self.taiga_client.url);
+        match self.taiga_client.request(Method::Get, url, "".to_string()) {
+            Ok(response) => {
+                match response.data.as_array() {
+                    Some(array) => {
+						let mut result = Vec::new();
+						for item in array {
+							let item_data = item.as_object().unwrap();
+							result.push(Project {
+								            id: item_data.get("id").unwrap().as_i64().unwrap(),
+								            name: item_data.get("name").unwrap().as_string().unwrap().to_string(),
+									   })
+						}
+                        Ok(result)
+                    },
+                    None => Err(APIError {message: "Invalid server response".to_string()})
+                }
+            },
+            Err(e) => {
+                return Err(e)
+            }
+        }
+    }
+}
+
+impl ProjectProxy {
+    pub fn new(taiga_client: Taiga, id: i64) -> ProjectProxy{
+        ProjectProxy {
+            taiga_client: taiga_client,
+            project_id: id
+        }
+    }
+
+    pub fn run(self: ProjectProxy) -> Result<Project, APIError> {
+        let url = format!("{}/projects/{}", self.taiga_client.url, self.project_id);
+        match self.taiga_client.request(Method::Get, url, "".to_string()) {
+            Ok(response) => {
+                match response.data.as_object() {
+                    Some(item_data) => {
+						Ok(Project {
+							id: item_data.get("id").unwrap().as_i64().unwrap(),
+							name: item_data.get("name").unwrap().as_string().unwrap().to_string(),
+					    })
+                    },
+                    None => Err(APIError {message: "Invalid server response".to_string()})
+                }
+            },
+            Err(e) => {
+                return Err(e)
+            }
+        }
     }
 }
