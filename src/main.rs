@@ -6,11 +6,13 @@ use taiga::Taiga;
 fn main() {
     let taiga = Taiga::new("http://localhost:8000/api/v1".to_string());
 
-    let taiga_logged = taiga.auth("admin".to_string(), "123123".to_string()).unwrap();
-    // if result.is_err() {
-    //     println!("{}", result.err().unwrap().message);
-    //     process::exit(1);
-    // }
+    let taiga_logged = match taiga.auth("admin".to_string(), "123123".to_string()) {
+        Ok(taiga_logged) => taiga_logged,
+        Err(api_error) => {
+            println!("{}", api_error.message);
+            process::exit(1);
+        }
+    };
 
     match taiga_logged.projects().run() {
         Ok(response) => {

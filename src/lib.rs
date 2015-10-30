@@ -8,7 +8,6 @@ use hyper::status::StatusCode;
 use hyper::method::Method;
 use hyper::header::{Headers, ContentType, Authorization};
 use rustc_serialize::json::Json;
-use rustc_serialize::json;
 
 #[derive(Debug)]
 pub struct APIError {
@@ -40,7 +39,7 @@ impl Taiga {
             Err(err) => return Err(APIError {message: format!("{}", err)})
         };
 
-        let mut client = Client::new();
+        let client = Client::new();
         let mut req = client.request(method, url);
 
 		req = match self.token.clone() {
