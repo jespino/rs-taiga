@@ -1,5 +1,6 @@
 extern crate hyper;
 extern crate rustc_serialize;
+extern crate time;
 
 pub mod structs;
 mod projects;
@@ -18,7 +19,7 @@ use structs::{ProjectsProxy, Taiga, APIError};
 pub struct Response {
     pub status: StatusCode,
     pub headers: Headers,
-    pub data: Json,
+    pub data: String,
 }
 
 impl Taiga {
@@ -60,7 +61,7 @@ impl Taiga {
         let rest_response = Response {
             status: resp.status,
             headers: resp.headers.clone(),
-            data: Json::from_str(&resp_body).unwrap(),
+            data: resp_body,
         };
 
         return Ok(rest_response);
@@ -72,7 +73,7 @@ impl Taiga {
         let url = "".to_string() + &self.url + "/auth";
         match self.request(Method::Post, url, format!("{}", login_data)) {
             Ok(response) => {
-                match response.data.find("auth_token") {
+                match Json::from_str(&response.data).unwrap().find("auth_token") {
                     Some(token) => {
                         Ok(Taiga {url: self.url, token: Some(format!("Bearer {}", token.as_string().unwrap()))})
                     },
