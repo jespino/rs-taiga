@@ -1,6 +1,10 @@
 extern crate hyper;
 extern crate rustc_serialize;
 
+pub mod structs;
+mod projects;
+mod userstories;
+
 use std::io::Read;
 
 use hyper::{Client, Url};
@@ -9,20 +13,12 @@ use hyper::method::Method;
 use hyper::header::{Headers, ContentType, Authorization};
 use rustc_serialize::json::Json;
 
-#[derive(Debug)]
-pub struct APIError {
-    pub message: String
-}
+use structs::{ProjectsProxy, Taiga, APIError};
 
 pub struct Response {
     pub status: StatusCode,
     pub headers: Headers,
     pub data: Json,
-}
-
-pub struct Taiga {
-    url: String,
-    token: Option<String>,
 }
 
 impl Taiga {
@@ -99,178 +95,4 @@ impl Taiga {
     // pub fn user_stories(self: &mut Taiga) -> UserStoriesProxy {
     //     return UserStoriesProxy::new(self)
     // }
-}
-
-//
-// Projects
-//
-
-pub struct ProjectsProxy<'a> {
-    taiga_client: &'a Taiga,
-}
-
-pub struct ProjectProxy<'a> {
-    taiga_client: &'a Taiga,
-    project_id: i64
-}
-
-pub struct Project {
-    pub id: i64,
-    pub name: String,
-}
-
-impl<'a> ProjectsProxy<'a> {
-    pub fn new(taiga_client: &'a Taiga) -> ProjectsProxy<'a> {
-        ProjectsProxy {
-            taiga_client: taiga_client
-        }
-    }
-
-    pub fn get(self: ProjectsProxy<'a>, id: i64) -> ProjectProxy<'a> {
-        ProjectProxy::new(self.taiga_client, id)
-    }
-
-    pub fn run(self: ProjectsProxy<'a>) -> Result<Vec<Project>, APIError> {
-        let url = format!("{}/projects", self.taiga_client.url);
-        match self.taiga_client.request(Method::Get, url, "".to_string()) {
-            Ok(response) => {
-                match response.data.as_array() {
-                    Some(array) => {
-						let mut result = Vec::new();
-						for item in array {
-							let item_data = item.as_object().unwrap();
-							result.push(Project {
-								            id: item_data.get("id").unwrap().as_i64().unwrap(),
-								            name: item_data.get("name").unwrap().as_string().unwrap().to_string(),
-									   })
-						}
-                        Ok(result)
-                    },
-                    None => Err(APIError {message: "Invalid server response".to_string()})
-                }
-            },
-            Err(e) => {
-                return Err(e)
-            }
-        }
-    }
-}
-
-impl<'a> ProjectProxy<'a> {
-    pub fn new(taiga_client: &'a Taiga, id: i64) -> ProjectProxy<'a>{
-        ProjectProxy {
-            taiga_client: taiga_client,
-            project_id: id
-        }
-    }
-
-    pub fn userstories(self: ProjectProxy<'a>) -> UserStoriesProxy<'a> {
-        UserStoriesProxy::new(self.taiga_client, self.project_id)
-    }
-
-    pub fn run(self: ProjectProxy<'a>) -> Result<Project, APIError> {
-        let url = format!("{}/projects/{}", self.taiga_client.url, self.project_id);
-        match self.taiga_client.request(Method::Get, url, "".to_string()) {
-            Ok(response) => {
-                match response.data.as_object() {
-                    Some(item_data) => {
-						Ok(Project {
-							id: item_data.get("id").unwrap().as_i64().unwrap(),
-							name: item_data.get("name").unwrap().as_string().unwrap().to_string(),
-					    })
-                    },
-                    None => Err(APIError {message: "Invalid server response".to_string()})
-                }
-            },
-            Err(e) => {
-                return Err(e)
-            }
-        }
-    }
-}
-
-//
-// User Stories
-//
-
-pub struct UserStoriesProxy<'a> {
-    taiga_client: &'a Taiga,
-    project_id: i64,
-}
-
-pub struct UserStoryProxy<'a> {
-    taiga_client: &'a Taiga,
-    us_id: i64,
-}
-
-pub struct UserStory {
-    pub id: i64,
-    pub subject: String,
-}
-
-impl<'a> UserStoriesProxy<'a> {
-    pub fn new(taiga_client: &'a Taiga, project_id: i64) -> UserStoriesProxy<'a> {
-        UserStoriesProxy {
-            taiga_client: taiga_client,
-            project_id: project_id
-        }
-    }
-
-    pub fn get(self: UserStoriesProxy<'a>, id: i64) -> UserStoryProxy<'a> {
-        UserStoryProxy::new(self.taiga_client, id)
-    }
-
-    pub fn run(self: UserStoriesProxy<'a>) -> Result<Vec<UserStory>, APIError> {
-        let url = format!("{}/userstories?project_id={}", self.taiga_client.url, self.project_id);
-        match self.taiga_client.request(Method::Get, url, "".to_string()) {
-            Ok(response) => {
-                match response.data.as_array() {
-                    Some(array) => {
-						let mut result = Vec::new();
-						for item in array {
-							let item_data = item.as_object().unwrap();
-							result.push(UserStory {
-								            id: item_data.get("id").unwrap().as_i64().unwrap(),
-								            subject: item_data.get("subject").unwrap().as_string().unwrap().to_string(),
-									   })
-						}
-                        Ok(result)
-                    },
-                    None => Err(APIError {message: "Invalid server response".to_string()})
-                }
-            },
-            Err(e) => {
-                return Err(e)
-            }
-        }
-    }
-}
-
-impl<'a> UserStoryProxy<'a> {
-    pub fn new(taiga_client: &'a Taiga, us_id: i64) -> UserStoryProxy<'a>{
-        UserStoryProxy {
-            taiga_client: taiga_client,
-            us_id: us_id
-        }
-    }
-
-    pub fn run(self: UserStoryProxy<'a>) -> Result<UserStory, APIError> {
-        let url = format!("{}/userstories/{}", self.taiga_client.url, self.us_id);
-        match self.taiga_client.request(Method::Get, url, "".to_string()) {
-            Ok(response) => {
-                match response.data.as_object() {
-                    Some(item_data) => {
-						Ok(UserStory {
-							id: item_data.get("id").unwrap().as_i64().unwrap(),
-							subject: item_data.get("subject").unwrap().as_string().unwrap().to_string(),
-					    })
-                    },
-                    None => Err(APIError {message: "Invalid server response".to_string()})
-                }
-            },
-            Err(e) => {
-                return Err(e)
-            }
-        }
-    }
 }
