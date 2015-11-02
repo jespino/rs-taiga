@@ -1,7 +1,9 @@
 use hyper::method::Method;
 use rustc_serialize::json;
 
-use structs::{Taiga, APIError, ProjectsProxy, ProjectProxy, ProjectDetail, ProjectListItem, UserStoriesProxy};
+use structs::common::{Taiga, APIError};
+use structs::projects::{ProjectsProxy, ProjectProxy, ProjectDetail, ProjectListItem};
+use structs::userstories::UserStoriesProxy;
 
 impl<'a> ProjectsProxy<'a> {
     pub fn new(taiga_client: &'a Taiga) -> ProjectsProxy<'a> {

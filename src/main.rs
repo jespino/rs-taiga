@@ -1,7 +1,7 @@
 extern crate taiga;
 
 use std::process;
-use taiga::structs::Taiga;
+use taiga::structs::common::Taiga;
 
 fn main() {
     let taiga = Taiga::new("http://localhost:8000/api/v1".to_string());

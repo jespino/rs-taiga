@@ -14,7 +14,8 @@ use hyper::method::Method;
 use hyper::header::{Headers, ContentType, Authorization};
 use rustc_serialize::json::Json;
 
-use structs::{ProjectsProxy, Taiga, APIError};
+use structs::common::{Taiga, APIError};
+use structs::projects::ProjectsProxy;
 
 pub struct Response {
     pub status: StatusCode,
