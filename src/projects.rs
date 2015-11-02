@@ -1,7 +1,7 @@
 use hyper::method::Method;
 use rustc_serialize::json;
 
-use structs::{Taiga, APIError, ProjectsProxy, ProjectProxy, Project, UserStoriesProxy};
+use structs::{Taiga, APIError, ProjectsProxy, ProjectProxy, ProjectDetail, ProjectListItem, UserStoriesProxy};
 
 impl<'a> ProjectsProxy<'a> {
     pub fn new(taiga_client: &'a Taiga) -> ProjectsProxy<'a> {
@@ -14,16 +14,16 @@ impl<'a> ProjectsProxy<'a> {
         ProjectProxy::new(self.taiga_client, id)
     }
 
-    pub fn run(self: ProjectsProxy<'a>) -> Result<Vec<Project>, APIError> {
+    pub fn run(self: ProjectsProxy<'a>) -> Result<Vec<ProjectListItem>, APIError> {
         let url = format!("{}/projects", self.taiga_client.url);
         match self.taiga_client.request(Method::Get, url, "".to_string()) {
             Ok(response) => {
                 match json::decode(&response.data) {
                     Ok(data) => {
-                        let result: Vec<Project> = data;
+                        let result: Vec<ProjectListItem> = data;
                         Ok(result)
                     },
-                    Err(_) => Err(APIError {message: "Invalid server response".to_string()})
+                    Err(err) => Err(APIError {message: format!("{}", err)})
                 }
             },
             Err(e) => {
@@ -45,16 +45,16 @@ impl<'a> ProjectProxy<'a> {
         UserStoriesProxy::new(self.taiga_client, self.project_id)
     }
 
-    pub fn run(self: ProjectProxy<'a>) -> Result<Project, APIError> {
+    pub fn run(self: ProjectProxy<'a>) -> Result<ProjectDetail, APIError> {
         let url = format!("{}/projects/{}", self.taiga_client.url, self.project_id);
         match self.taiga_client.request(Method::Get, url, "".to_string()) {
             Ok(response) => {
                 match json::decode(&response.data) {
                     Ok(data) => {
-                        let result: Project = data;
+                        let result: ProjectDetail = data;
 						Ok(result)
                     },
-                    Err(_) => Err(APIError {message: "Invalid server response".to_string()})
+                    Err(err) => Err(APIError {message: format!("{}", err)})
                 }
             },
             Err(e) => {
