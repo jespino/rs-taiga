@@ -1,7 +1,7 @@
 use hyper::method::Method;
 use rustc_serialize::json;
 
-use structs::common::{Taiga, APIError};
+use structs::common::{Taiga, APIError, ObjectType, DeleteProxy};
 use structs::userstories::{UserStoriesProxy, UserStoryProxy, UserStory};
 
 impl<'a> UserStoriesProxy<'a> {
@@ -14,6 +14,10 @@ impl<'a> UserStoriesProxy<'a> {
 
     pub fn get(self: UserStoriesProxy<'a>, id: i64) -> UserStoryProxy<'a> {
         UserStoryProxy::new(self.taiga_client, id)
+    }
+
+    pub fn delete(self: UserStoriesProxy<'a>, id: i64) -> DeleteProxy<'a> {
+        DeleteProxy::new(self.taiga_client, ObjectType::UserStory, id)
     }
 
     pub fn run(self: UserStoriesProxy<'a>) -> Result<Vec<UserStory>, APIError> {
@@ -43,6 +47,10 @@ impl<'a> UserStoryProxy<'a> {
         }
     }
 
+    pub fn delete(self: UserStoryProxy<'a>) -> DeleteProxy<'a> {
+        DeleteProxy::new(self.taiga_client, ObjectType::UserStory, self.us_id)
+    }
+
     pub fn run(self: UserStoryProxy<'a>) -> Result<UserStory, APIError> {
         let url = format!("{}/userstories/{}", self.taiga_client.url, self.us_id);
         match self.taiga_client.request(Method::Get, url, "".to_string()) {
@@ -59,5 +67,34 @@ impl<'a> UserStoryProxy<'a> {
                 return Err(e)
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use structs::common::{Taiga, ObjectType};
+    use structs::userstories::{UserStoriesProxy, UserStoryProxy};
+
+    #[test]
+    fn userstories_get() {
+        let taiga = Taiga::new("http://dummy-url.com".to_string());
+        let result = UserStoriesProxy::new(&taiga, 10).get(10);
+        assert_eq!(result.us_id, 10);
+    }
+
+    #[test]
+    fn userstories_delete() {
+        let taiga = Taiga::new("http://dummy-url.com".to_string());
+        let result = UserStoriesProxy::new(&taiga, 5).delete(10);
+        assert_eq!(result.object_type, ObjectType::UserStory);
+        assert_eq!(result.object_id, 10);
+    }
+
+    #[test]
+    fn userstory_delete() {
+        let taiga = Taiga::new("http://dummy-url.com".to_string());
+        let result = UserStoryProxy::new(&taiga, 10).delete();
+        assert_eq!(result.object_type, ObjectType::UserStory);
+        assert_eq!(result.object_id, 10);
     }
 }

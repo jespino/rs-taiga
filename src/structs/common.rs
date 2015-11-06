@@ -120,3 +120,18 @@ pub struct USStatus {
 	pub wip_limit: Option<i64>
 }
 
+#[derive(PartialEq, Debug)]
+pub enum ObjectType {
+    Project,
+    UserStory,
+    Issue,
+    Task,
+    WikiPage,
+    Attachment,
+}
+
+pub struct DeleteProxy<'a> {
+    pub taiga_client: &'a Taiga,
+    pub object_type: ObjectType,
+    pub object_id: i64,
+}
