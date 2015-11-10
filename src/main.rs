@@ -57,4 +57,16 @@ fn main() {
         },
         Err(e) => println!("{}", e.message)
     }
+
+    match taiga_logged.userstories().run() {
+        Ok(userstories) => {
+            for us in userstories {
+                println!("{} - {}",
+                    us.id,
+                    us.subject,
+                );
+            }
+        },
+        Err(e) => println!("{}", e.message)
+    }
 }

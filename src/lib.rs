@@ -17,6 +17,7 @@ use rustc_serialize::json::Json;
 
 use structs::common::{Taiga, APIError};
 use structs::projects::ProjectsProxy;
+use structs::userstories::UserStoriesProxy;
 
 pub struct Response {
     pub status: StatusCode,
@@ -95,7 +96,8 @@ impl Taiga {
     pub fn projects(self: &Taiga) -> ProjectsProxy {
         return ProjectsProxy::new(self)
     }
-    // pub fn user_stories(self: &mut Taiga) -> UserStoriesProxy {
-    //     return UserStoriesProxy::new(self)
-    // }
+
+    pub fn userstories(self: &Taiga) -> UserStoriesProxy {
+        return UserStoriesProxy::new_all(self)
+    }
 }

@@ -2,7 +2,7 @@ use structs::common::{Taiga};
 
 pub struct UserStoriesProxy<'a> {
     pub taiga_client: &'a Taiga,
-    pub project_id: i64,
+    pub project_id: Option<i64>,
 }
 
 pub struct UserStoryProxy<'a> {

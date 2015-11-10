@@ -8,7 +8,14 @@ impl<'a> UserStoriesProxy<'a> {
     pub fn new(taiga_client: &'a Taiga, project_id: i64) -> UserStoriesProxy<'a> {
         UserStoriesProxy {
             taiga_client: taiga_client,
-            project_id: project_id
+            project_id: Some(project_id)
+        }
+    }
+
+    pub fn new_all(taiga_client: &'a Taiga) -> UserStoriesProxy<'a> {
+        UserStoriesProxy {
+            taiga_client: taiga_client,
+            project_id: None
         }
     }
 
@@ -21,7 +28,10 @@ impl<'a> UserStoriesProxy<'a> {
     }
 
     pub fn run(self: UserStoriesProxy<'a>) -> Result<Vec<UserStory>, APIError> {
-        let url = format!("{}/userstories?project_id={}", self.taiga_client.url, self.project_id);
+        let url = match self.project_id {
+            Some(project_id) => format!("{}/userstories?project_id={}", self.taiga_client.url, project_id),
+            None => format!("{}/userstories", self.taiga_client.url)
+        };
         match self.taiga_client.request(Method::Get, url, "".to_string()) {
             Ok(response) => {
                 match json::decode(&response.data) {
