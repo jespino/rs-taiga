@@ -62,7 +62,7 @@ impl<'a> ProjectProxy<'a> {
                 match json::decode(&response.data) {
                     Ok(data) => {
                         let result: ProjectDetail = data;
-						Ok(result)
+                        Ok(result)
                     },
                     Err(err) => Err(APIError {message: format!("{}", err)})
                 }

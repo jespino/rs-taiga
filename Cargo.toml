@@ -4,7 +4,6 @@ version = "0.0.1"
 authors = ["Jesús Espino <jespinog@gmail.com>"]
 description = "TaigaIO client library"
 license = "BSD-3-Clause"
-license-file = "LICENSE"
 homepage = "http://github.com/jespino/rs-taiga"
 repository = "http://github.com/jespino/rs-taiga"
 documentation = "http://github.com/jespino/rs-taiga"

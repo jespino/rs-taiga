@@ -33,7 +33,7 @@ impl Taiga {
         }
     }
 
-	pub fn request(self: &Taiga, method: Method, url_string: String, body: String) -> Result<Response, APIError> {
+    pub fn request(self: &Taiga, method: Method, url_string: String, body: String) -> Result<Response, APIError> {
         let url = match Url::parse(&url_string) {
             Ok(url) => url,
             Err(err) => return Err(APIError {message: format!("{}", err)})
@@ -42,10 +42,10 @@ impl Taiga {
         let client = Client::new();
         let mut req = client.request(method, url);
 
-		req = match self.token.clone() {
-			Some(token) => req.header(Authorization(token)),
+        req = match self.token.clone() {
+            Some(token) => req.header(Authorization(token)),
             None => req
-		};
+        };
 
         req = req.header(ContentType::json());
         req = req.body(body.as_bytes());

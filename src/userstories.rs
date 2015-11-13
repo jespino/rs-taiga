@@ -2,7 +2,7 @@ use hyper::method::Method;
 use rustc_serialize::json;
 
 use structs::common::{Taiga, APIError, ObjectType, DeleteProxy};
-use structs::userstories::{UserStoriesProxy, UserStoryProxy, UserStory};
+use structs::userstories::{UserStoriesProxy, UserStoryProxy, UserStoryListItem, UserStoryDetail};
 
 impl<'a> UserStoriesProxy<'a> {
     pub fn new(taiga_client: &'a Taiga, project_id: i64) -> UserStoriesProxy<'a> {
@@ -27,7 +27,7 @@ impl<'a> UserStoriesProxy<'a> {
         DeleteProxy::new(self.taiga_client, ObjectType::UserStory, id)
     }
 
-    pub fn run(self: UserStoriesProxy<'a>) -> Result<Vec<UserStory>, APIError> {
+    pub fn run(self: UserStoriesProxy<'a>) -> Result<Vec<UserStoryListItem>, APIError> {
         let url = match self.project_id {
             Some(project_id) => format!("{}/userstories?project_id={}", self.taiga_client.url, project_id),
             None => format!("{}/userstories", self.taiga_client.url)
@@ -36,7 +36,7 @@ impl<'a> UserStoriesProxy<'a> {
             Ok(response) => {
                 match json::decode(&response.data) {
                     Ok(data) => {
-						let result: Vec<UserStory> = data;
+                        let result: Vec<UserStoryListItem> = data;
                         Ok(result)
                     },
                     Err(_) => Err(APIError {message: "Invalid server response".to_string()})
@@ -61,14 +61,14 @@ impl<'a> UserStoryProxy<'a> {
         DeleteProxy::new(self.taiga_client, ObjectType::UserStory, self.us_id)
     }
 
-    pub fn run(self: UserStoryProxy<'a>) -> Result<UserStory, APIError> {
+    pub fn run(self: UserStoryProxy<'a>) -> Result<UserStoryDetail, APIError> {
         let url = format!("{}/userstories/{}", self.taiga_client.url, self.us_id);
         match self.taiga_client.request(Method::Get, url, "".to_string()) {
             Ok(response) => {
                 match json::decode(&response.data) {
                     Ok(data) => {
-                        let result: UserStory = data;
-						Ok(result)
+                        let result: UserStoryDetail = data;
+                        Ok(result)
                     },
                     Err(_) => Err(APIError {message: "Invalid server response".to_string()})
                 }
