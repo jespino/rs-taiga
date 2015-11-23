@@ -1,5 +1,5 @@
 use hyper::method::Method;
-use rustc_serialize::json;
+use serde_json;
 
 use structs::common::{Taiga, APIError, ObjectType, DeleteProxy};
 use structs::userstories::{UserStoriesProxy, UserStoryProxy, UserStoryListItem, UserStoryDetail};
@@ -34,7 +34,7 @@ impl<'a> UserStoriesProxy<'a> {
         };
         match self.taiga_client.request(Method::Get, url, "".to_string()) {
             Ok(response) => {
-                match json::decode(&response.data) {
+                match serde_json::from_str(&response.data) {
                     Ok(data) => {
                         let result: Vec<UserStoryListItem> = data;
                         Ok(result)
@@ -65,7 +65,7 @@ impl<'a> UserStoryProxy<'a> {
         let url = format!("{}/userstories/{}", self.taiga_client.url, self.us_id);
         match self.taiga_client.request(Method::Get, url, "".to_string()) {
             Ok(response) => {
-                match json::decode(&response.data) {
+                match serde_json::from_str(&response.data) {
                     Ok(data) => {
                         let result: UserStoryDetail = data;
                         Ok(result)

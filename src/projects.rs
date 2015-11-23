@@ -1,5 +1,5 @@
 use hyper::method::Method;
-use rustc_serialize::json;
+use serde_json;
 
 use structs::common::{Taiga, APIError, ObjectType, DeleteProxy};
 use structs::projects::{ProjectsProxy, ProjectProxy, ProjectDetail, ProjectListItem};
@@ -24,7 +24,7 @@ impl<'a> ProjectsProxy<'a> {
         let url = format!("{}/projects", self.taiga_client.url);
         match self.taiga_client.request(Method::Get, url, "".to_string()) {
             Ok(response) => {
-                match json::decode(&response.data) {
+                match serde_json::from_str(&response.data) {
                     Ok(data) => {
                         let result: Vec<ProjectListItem> = data;
                         Ok(result)
@@ -59,7 +59,7 @@ impl<'a> ProjectProxy<'a> {
         let url = format!("{}/projects/{}", self.taiga_client.url, self.project_id);
         match self.taiga_client.request(Method::Get, url, "".to_string()) {
             Ok(response) => {
-                match json::decode(&response.data) {
+                match serde_json::from_str(&response.data) {
                     Ok(data) => {
                         let result: ProjectDetail = data;
                         Ok(result)
@@ -83,7 +83,7 @@ mod tests {
     fn project_userstories() {
         let taiga = Taiga::new("http://dummy-url.com".to_string());
         let result = ProjectProxy::new(&taiga, 10).userstories();
-        assert_eq!(result.project_id, 10);
+        assert_eq!(result.project_id.unwrap(), 10);
     }
 
     #[test]

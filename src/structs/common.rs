@@ -8,7 +8,7 @@ pub struct APIError {
     pub message: String
 }
 
-#[derive(RustcEncodable, RustcDecodable, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct CustomAttribute {
     pub id: i64,
     pub name: String,
@@ -17,7 +17,7 @@ pub struct CustomAttribute {
     pub project: i64
 }
 
-#[derive(RustcEncodable, RustcDecodable, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct IssueStatus {
     pub id: i64,
     pub color: String,
@@ -28,7 +28,7 @@ pub struct IssueStatus {
     pub slug: String
 }
 
-#[derive(RustcEncodable, RustcDecodable, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct IssueType {
     pub id: i64,
     pub color: String,
@@ -37,7 +37,7 @@ pub struct IssueType {
     pub project: i64,
 }
 
-#[derive(RustcEncodable, RustcDecodable, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Membership {
     pub id: i64,
     pub color: String,
@@ -55,7 +55,7 @@ pub struct Membership {
     pub user: i64
 }
 
-#[derive(RustcEncodable, RustcDecodable, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Points {
     pub id: i64,
     pub name: String,
@@ -64,7 +64,7 @@ pub struct Points {
     pub value: Option<f64>
 }
 
-#[derive(RustcEncodable, RustcDecodable, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Priority {
     pub id: i64,
     pub color: String,
@@ -73,7 +73,7 @@ pub struct Priority {
     pub project: i64,
 }
 
-#[derive(RustcEncodable, RustcDecodable, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Role {
     pub id: i64,
     pub computable: bool,
@@ -82,7 +82,7 @@ pub struct Role {
     pub slug: String
 }
 
-#[derive(RustcEncodable, RustcDecodable, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Severity {
     pub id: i64,
     pub color: String,
@@ -91,13 +91,13 @@ pub struct Severity {
     pub project: i64,
 }
 
-#[derive(RustcEncodable, RustcDecodable, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct TagColor {
     name: String,
     color: String,
 }
 
-#[derive(RustcEncodable, RustcDecodable, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct TaskStatus {
     pub id: i64,
     pub color: String,
@@ -108,7 +108,7 @@ pub struct TaskStatus {
     pub slug: String
 }
 
-#[derive(RustcEncodable, RustcDecodable, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct USStatus {
     pub id: i64,
     pub color: String,

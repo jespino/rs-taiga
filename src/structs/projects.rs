@@ -10,7 +10,7 @@ pub struct ProjectProxy<'a> {
     pub project_id: i64
 }
 
-#[derive(RustcEncodable, RustcDecodable, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct ProjectMember {
     pub id: i64,
     pub username: String,
@@ -25,7 +25,7 @@ pub struct ProjectMember {
     pub user: i64
 }
 
-#[derive(RustcEncodable, RustcDecodable, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct ProjectDetail {
     pub id: i64,
     pub name: String,
@@ -77,7 +77,7 @@ pub struct ProjectDetail {
     pub videoconferences_extra_data: Option<String>,
 }
 
-#[derive(RustcEncodable, RustcDecodable, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct ProjectListItem {
     pub id: i64,
     pub name: String,

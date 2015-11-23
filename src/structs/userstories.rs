@@ -12,16 +12,18 @@ pub struct UserStoryProxy<'a> {
 }
 
 
-#[derive(RustcEncodable, RustcDecodable, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Neighbor {
     pub id: i64,
+    #[serde(rename="ref")]
     pub reference: i64,
     pub subject: String,
 }
 
-#[derive(RustcEncodable, RustcDecodable, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct UserStoryListItem {
     pub id: i64,
+    #[serde(rename="ref")]
     pub reference: i64,
     pub subject: String,
     pub assigned_to: Option<i64>,
@@ -56,9 +58,10 @@ pub struct UserStoryListItem {
     pub assigend_to_extra_info: HashMap<String, String>,
 }
 
-#[derive(RustcEncodable, RustcDecodable, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct UserStoryDetail {
     pub id: i64,
+    #[serde(rename="ref")]
     pub reference: i64,
     pub subject: String,
     pub description: String,
