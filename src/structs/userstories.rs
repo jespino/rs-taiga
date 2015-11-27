@@ -11,6 +11,14 @@ pub struct UserStoryProxy<'a> {
     pub us_id: i64,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+pub struct UserExtraInfo {
+    pub username: String,
+    pub full_name_display: String,
+    pub photo: String,
+    pub big_photo: String,
+    pub is_active: bool,
+}
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Neighbor {
@@ -18,6 +26,12 @@ pub struct Neighbor {
     #[serde(rename="ref")]
     pub reference: i64,
     pub subject: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Neighbors {
+    pub previous: Option<Neighbor>,
+    pub next: Option<Neighbor>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -37,16 +51,20 @@ pub struct UserStoryListItem {
     pub comment: String,
     pub created_date: String,
     pub modified_date: String,
-    pub finish_date: String,
+    pub finish_date: Option<String>,
     pub generated_from_issue: Option<i64>,
-    pub is_archived: bool,
     pub is_blocked: bool,
     pub is_closed: bool,
-    pub milestone: i64,
-    pub milestone_name: String,
-    pub milestone_slug: String,
+    pub is_voter: bool,
+    pub total_voters: i64,
+    pub is_watcher: bool,
+    pub total_watchers: i64,
+    pub external_reference: Option<(String, i64)>,
+    pub milestone: Option<i64>,
+    pub milestone_name: Option<String>,
+    pub milestone_slug: Option<String>,
     pub origin_issue: Option<i64>,
-    pub owner: i64,
+    pub owner: Option<i64>,
     pub points: HashMap<i64, i64>,
     pub project: i64,
     pub status: i64,
@@ -55,7 +73,8 @@ pub struct UserStoryListItem {
     pub version: i64,
     pub watchers: Vec<i64>,
     pub status_extra_info: HashMap<String, String>,
-    pub assigend_to_extra_info: HashMap<String, String>,
+    pub assigned_to_extra_info: Option<UserExtraInfo>,
+    pub owner_extra_info: Option<UserExtraInfo>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -77,16 +96,20 @@ pub struct UserStoryDetail {
     pub comment: String,
     pub created_date: String,
     pub modified_date: String,
-    pub finish_date: String,
+    pub finish_date: Option<String>,
     pub generated_from_issue: Option<i64>,
-    pub is_archived: bool,
     pub is_blocked: bool,
     pub is_closed: bool,
-    pub milestone: i64,
-    pub milestone_name: String,
-    pub milestone_slug: String,
+    pub is_voter: bool,
+    pub total_voters: i64,
+    pub is_watcher: bool,
+    pub total_watchers: i64,
+    pub external_reference: Option<(String, i64)>,
+    pub milestone: Option<i64>,
+    pub milestone_name: Option<String>,
+    pub milestone_slug: Option<String>,
     pub origin_issue: Option<i64>,
-    pub owner: i64,
+    pub owner: Option<i64>,
     pub points: HashMap<i64, i64>,
     pub project: i64,
     pub status: i64,
@@ -95,6 +118,7 @@ pub struct UserStoryDetail {
     pub version: i64,
     pub watchers: Vec<i64>,
     pub status_extra_info: HashMap<String, String>,
-    pub assigend_to_extra_info: HashMap<String, String>,
-    pub neighbors: HashMap<String, Neighbor>,
+    pub assigned_to_extra_info: Option<UserExtraInfo>,
+    pub owner_extra_info: Option<UserExtraInfo>,
+    pub neighbors: Neighbors,
 }

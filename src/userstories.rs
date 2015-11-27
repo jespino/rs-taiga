@@ -40,6 +40,7 @@ impl<'a> UserStoriesProxy<'a> {
                         Ok(result)
                     },
                     Err(_) => Err(APIError {message: "Invalid server response".to_string()})
+                    // Err(e) => Err(APIError {message: format!("{}", e)})
                 }
             },
             Err(e) => {
@@ -71,6 +72,7 @@ impl<'a> UserStoryProxy<'a> {
                         Ok(result)
                     },
                     Err(_) => Err(APIError {message: "Invalid server response".to_string()})
+                    // Err(e) => Err(APIError {message: format!("{}", e)})
                 }
             },
             Err(e) => {
