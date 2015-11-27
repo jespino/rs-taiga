@@ -1,6 +1,6 @@
 [package]
 name = "taiga"
-version = "0.0.1"
+version = "0.0.2"
 authors = ["Jesús Espino <jespinog@gmail.com>"]
 description = "TaigaIO client library"
 license = "BSD-3-Clause"
