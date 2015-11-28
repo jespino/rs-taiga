@@ -5,6 +5,7 @@ pub mod structs;
 mod projects;
 mod userstories;
 mod issues;
+mod tasks;
 mod common;
 
 use std::io::Read;
@@ -18,6 +19,7 @@ use structs::common::{Taiga, APIError};
 use structs::projects::ProjectsProxy;
 use structs::userstories::UserStoriesProxy;
 use structs::issues::IssuesProxy;
+use structs::tasks::TasksProxy;
 use structs::login::{LoginResponse, LoginRequest};
 
 pub struct Response {
@@ -105,5 +107,9 @@ impl Taiga {
 
     pub fn issues(self: &Taiga) -> IssuesProxy {
         return IssuesProxy::new_all(self)
+    }
+
+    pub fn tasks(self: &Taiga) -> TasksProxy {
+        return TasksProxy::new_all(self)
     }
 }
