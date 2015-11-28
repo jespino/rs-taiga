@@ -4,6 +4,7 @@ extern crate time;
 pub mod structs;
 mod projects;
 mod userstories;
+mod issues;
 mod common;
 
 use std::io::Read;
@@ -16,6 +17,7 @@ use hyper::header::{Headers, ContentType, Authorization};
 use structs::common::{Taiga, APIError};
 use structs::projects::ProjectsProxy;
 use structs::userstories::UserStoriesProxy;
+use structs::issues::IssuesProxy;
 use structs::login::{LoginResponse, LoginRequest};
 
 pub struct Response {
@@ -99,5 +101,9 @@ impl Taiga {
 
     pub fn userstories(self: &Taiga) -> UserStoriesProxy {
         return UserStoriesProxy::new_all(self)
+    }
+
+    pub fn issues(self: &Taiga) -> IssuesProxy {
+        return IssuesProxy::new_all(self)
     }
 }
