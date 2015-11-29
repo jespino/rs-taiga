@@ -6,6 +6,7 @@ mod projects;
 mod userstories;
 mod issues;
 mod tasks;
+mod wikipages;
 mod common;
 
 use std::io::Read;
@@ -20,6 +21,7 @@ use structs::projects::ProjectsProxy;
 use structs::userstories::UserStoriesProxy;
 use structs::issues::IssuesProxy;
 use structs::tasks::TasksProxy;
+use structs::wikipages::WikiPagesProxy;
 use structs::login::{LoginResponse, LoginRequest};
 
 pub struct Response {
@@ -111,5 +113,9 @@ impl Taiga {
 
     pub fn tasks(self: &Taiga) -> TasksProxy {
         return TasksProxy::new_all(self)
+    }
+
+    pub fn wikipages(self: &Taiga) -> WikiPagesProxy {
+        return WikiPagesProxy::new_all(self)
     }
 }
